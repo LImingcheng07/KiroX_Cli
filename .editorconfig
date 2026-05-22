@@ -1,0 +1,42 @@
+# EditorConfig: https://editorconfig.org
+# 顶层配置，停止向上查找
+root = true
+
+# 通用规则
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = tab
+indent_size = 4
+
+# Go 源码：官方 gofmt 用 tab
+[*.go]
+indent_style = tab
+indent_size = 4
+
+# Markdown：保留行尾空格（双空格表示换行）
+[*.md]
+trim_trailing_whitespace = false
+indent_style = space
+indent_size = 2
+
+# 配置类（YAML / JSON / TOML）：2 空格
+[*.{yml,yaml,json,toml}]
+indent_style = space
+indent_size = 2
+
+# Shell 脚本
+[*.sh]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+# Windows 脚本：CRLF
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
+
+# Makefile 必须用 tab
+[Makefile]
+indent_style = tab

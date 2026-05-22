@@ -1,0 +1,11 @@
+# Outlook 邮箱池样本文件
+#
+# 实际使用时请将本文件复制为 outlook.csv，并填入真实账号
+#   cp outlook.csv.example outlook.csv
+#
+# 每行一条账号，字段以 ---- 分隔，顺序为：
+#   邮箱----密码----客户端ID(ClientID)----RefreshToken
+#
+# 示例（以下为占位数据，无效）：
+example1@outlook.com----password123----xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx----M.C5XX_SN1.0.U.-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+example2@outlook.com.br----password456----yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy----M.C5XX_SN1.0.U.-YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY

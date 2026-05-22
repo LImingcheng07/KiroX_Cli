@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 使用问题 / 讨论
+    url: https://linux.do
+    about: 一般性使用问题、IP 风控相关讨论，请到 LINUX DO 社区或 Discussions
