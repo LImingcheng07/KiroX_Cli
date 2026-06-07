@@ -27,29 +27,13 @@ type Config struct {
 	FullName string
 
 	// 运行时
-	Proxy string
-	Debug bool
+	Proxy   string   // 当前使用的代理 (单代理或轮换中当前选中的)
+	Proxies []string // 代理池: 从 -p 参数解析的多个代理地址
+	Debug   bool
 
 	// MoEmail 配置
 	MoEmailBaseURL string
 	MoEmailAPIKey  string
-
-	// Cloudflare Temp Mail 配置
-	UseCFTemp        bool
-	CFTempBaseURL    string
-	CFTempAdminKey   string
-	CFTempCustomAuth string
-
-	// MailTM 临时邮箱配置
-	UseMailTM bool
-
-	// ThrowawayMail 临时邮箱配置
-	UseThrowawayMail bool
-
-	// Gmail 配置
-	UseGmail     bool
-	GmailCSV     string
-	GmailAccount *email.GmailAccount
 
 	// Outlook 模式
 	UseOutlook     bool

@@ -16,8 +16,3 @@ type TempEmailService interface {
 func NewMoEmailService(baseURL, apiKey, proxy, chromeVer string) TempEmailService {
 	return NewMoEmailProvider(baseURL, apiKey, proxy, chromeVer)
 }
-
-// NewMailTMService 创建 MailTM 临时邮箱服务
-func NewMailTMService(proxy string) TempEmailService {
-	return NewMailTMProvider(proxy)
-}

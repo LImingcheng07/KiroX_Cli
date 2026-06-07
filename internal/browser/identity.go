@@ -20,7 +20,7 @@ type chromeVersion struct {
 // 见 internal/http/helper.go NewTLSClient()
 func genChromeVersion() chromeVersion {
 	versions := []string{
-		"120", "124", "144",
+		"120", "124", "130", "131", "135", "136", "137", "144",
 	}
 	v := versions[rand.Intn(len(versions))]
 
@@ -363,7 +363,19 @@ func RandomIdentity() *BrowserIdentity {
 	concurrencies := []int{2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 32}
 	hardwareConcurrency := concurrencies[rand.Intn(len(concurrencies))]
 
-	platform := "Win32"
+	platforms := []string{"Win32", "MacIntel", "Linux x86_64"}
+	platform := platforms[rand.Intn(len(platforms))]
+
+	// 修正 Chrome UA 中的 OS 部分以匹配 Platform
+	var osSegment string
+	switch platform {
+	case "MacIntel":
+		osSegment = "Macintosh; Intel Mac OS X 10_15_7"
+	case "Linux x86_64":
+		osSegment = "X11; Linux x86_64"
+	default:
+		osSegment = "Windows NT 10.0; Win64; x64"
+	}
 
 	// Math 精度 (算法生成)
 	mathTan, mathSin, mathCos := genMath()
@@ -388,7 +400,7 @@ func RandomIdentity() *BrowserIdentity {
 	copy(plugins, pluginsPool)
 	rand.Shuffle(len(plugins), func(i, j int) { plugins[i], plugins[j] = plugins[j], plugins[i] })
 
-	ua := fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", cv.Version)
+	ua := fmt.Sprintf("Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36", osSegment, cv.Version)
 
 	return &BrowserIdentity{
 		ChromeVer:           cv.Version,

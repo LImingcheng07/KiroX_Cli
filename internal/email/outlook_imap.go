@@ -71,7 +71,7 @@ func ParseOutlookLines(data string) []OutlookAccount {
 
 	// 先尝试按换行分割
 	lines := strings.Split(data, "\n")
-	
+
 	// 如果只有一行，可能是空格分隔的格式
 	if len(lines) == 1 {
 		// 尝试按空格分割（账号格式: email----password----clientid----token）
@@ -110,7 +110,7 @@ func ParseOutlookLines(data string) []OutlookAccount {
 			}
 		}
 	}
-	
+
 	return accounts
 }
 

@@ -21,7 +21,7 @@ func (r *Registrar) Step12_8SSOWorkflow() error {
 	loginURL := fmt.Sprintf("%s/login?directory_id=view&redirect_url=%s", r.Cfg.PortalBase, redirectURL)
 
 	h := map[string]string{
-		"Accept":              "*/*",
+		"Accept":             "*/*",
 		"User-Agent":         r.Identity.UA,
 		"Origin":             r.Cfg.ViewBase,
 		"Referer":            r.Cfg.ViewBase + "/",
@@ -133,11 +133,11 @@ func (r *Registrar) completeSSOWorkflow(wh string) error {
 	startURL := r.Cfg.ViewBase + "/start/?" + params.Encode()
 
 	h2 := map[string]string{
-		"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-		"User-Agent":      r.Identity.UA,
-		"Referer":         r.Cfg.SigninBase + "/",
-		"sec-fetch-dest":  "document",
-		"sec-fetch-mode":  "navigate",
+		"Accept":         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		"User-Agent":     r.Identity.UA,
+		"Referer":        r.Cfg.SigninBase + "/",
+		"sec-fetch-dest": "document",
+		"sec-fetch-mode": "navigate",
 	}
 	var cookieParts []string
 	if v, ok := r.Cookies["loginCsrfToken"]; ok {
@@ -162,19 +162,19 @@ func (r *Registrar) Step13SSOToken() (map[string]interface{}, error) {
 	}
 
 	h := map[string]string{
-		"Accept":                "application/json, text/plain, */*",
-		"Content-Type":          "application/x-www-form-urlencoded",
-		"User-Agent":            r.Identity.UA,
-		"Origin":                r.Cfg.ViewBase,
-		"Referer":               r.Cfg.ViewBase + "/",
+		"Accept":               "application/json, text/plain, */*",
+		"Content-Type":         "application/x-www-form-urlencoded",
+		"User-Agent":           r.Identity.UA,
+		"Origin":               r.Cfg.ViewBase,
+		"Referer":              r.Cfg.ViewBase + "/",
 		"x-amz-sso-csrf-token": csrf,
-		"sec-ch-ua":             r.Identity.SecUA,
-		"sec-ch-ua-mobile":      "?0",
-		"sec-ch-ua-platform":    `"Windows"`,
-		"sec-fetch-dest":        "empty",
-		"sec-fetch-mode":        "cors",
-		"sec-fetch-site":        "cross-site",
-		"priority":              "u=1, i",
+		"sec-ch-ua":            r.Identity.SecUA,
+		"sec-ch-ua-mobile":     "?0",
+		"sec-ch-ua-platform":   `"Windows"`,
+		"sec-fetch-dest":       "empty",
+		"sec-fetch-mode":       "cors",
+		"sec-fetch-site":       "cross-site",
+		"priority":             "u=1, i",
 	}
 
 	formData := url.Values{

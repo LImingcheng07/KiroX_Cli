@@ -27,7 +27,6 @@ func DefaultUA() string { return fallbackUA }
 // DefaultSecUA 获取 fallback sec-ch-ua
 func DefaultSecUA() string { return fallbackSecUA }
 
-
 // Hex4 生成 4 位随机十六进制
 func Hex4() string {
 	const chars = "0123456789abcdef"
@@ -100,12 +99,12 @@ func NewTLSClient(proxy string, followRedirect bool, chromeVer string) tls_clien
 		profile = profiles.Chrome_120
 	case "124":
 		profile = profiles.Chrome_124
-	case "130", "131", "135", "136", "137":
-		profile = profiles.Chrome_144 // 回退到 144，因为 tls-client 新版可能有 144
+	case "130", "131", "133", "135", "136", "137":
+		profile = profiles.Chrome_131
 	case "144":
 		profile = profiles.Chrome_144
 	default:
-		profile = profiles.Chrome_144
+		profile = profiles.Chrome_131
 	}
 
 	opts := []tls_client.HttpClientOption{

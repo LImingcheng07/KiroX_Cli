@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	delta      uint32 = 0x9E3779B9
-	mask       uint32 = 0xFFFFFFFF
-	identifier        = "ECdITeCs"
-	fallbackVer       = "4.0.0"
+	delta       uint32 = 0x9E3779B9
+	mask        uint32 = 0xFFFFFFFF
+	identifier         = "ECdITeCs"
+	fallbackVer        = "4.0.0"
 )
 
 var (
@@ -172,14 +172,14 @@ func fetchAppJS(proxy string) string {
 	client := httputil.NewTLSClient(proxy, true, "144.0.0.0")
 	req, _ := fhttp.NewRequest("GET", "https://us-east-1.signin.aws/assets/js/app.js", nil)
 	httputil.SetHeaders(req, map[string]string{
-		"User-Agent":     httputil.DefaultUA(),
-		"Accept":         "*/*",
+		"User-Agent":      httputil.DefaultUA(),
+		"Accept":          "*/*",
 		"Accept-Language": "en-US,en;q=0.9",
-		"Referer":        "https://us-east-1.signin.aws/",
-		"sec-ch-ua":      httputil.DefaultSecUA(),
-		"sec-fetch-dest": "script",
-		"sec-fetch-mode": "no-cors",
-		"sec-fetch-site": "same-origin",
+		"Referer":         "https://us-east-1.signin.aws/",
+		"sec-ch-ua":       httputil.DefaultSecUA(),
+		"sec-fetch-dest":  "script",
+		"sec-fetch-mode":  "no-cors",
+		"sec-fetch-site":  "same-origin",
 	})
 	resp, err := client.Do(req)
 	if err != nil {

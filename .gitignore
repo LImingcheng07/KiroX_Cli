@@ -38,9 +38,11 @@ Thumbs.db
 /dist/
 /build/
 /kirox-cli
+/kiro_reg
 
 # Project-specific
 output/
+scripts/
 *.csv
 !*.example.csv
 !outlook.csv.example

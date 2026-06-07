@@ -23,8 +23,8 @@ type FingerprintContext struct {
 func NewFPContext(identity *BrowserIdentity) *FingerprintContext {
 	ts := time.Now().Unix()
 	return &FingerprintContext{
-		Identity:   identity,
-		CanvasHash: identity.CanvasHash,
+		Identity:      identity,
+		CanvasHash:    identity.CanvasHash,
 		HistogramBins: identity.HistogramBase,
 		LsUbidSignin: fmt.Sprintf("%s-%07d-%07d:%d",
 			identity.LsubidPrefixSignin, rand.Intn(10000000), rand.Intn(10000000), ts),

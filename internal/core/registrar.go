@@ -207,39 +207,12 @@ func (r *Registrar) Step2Device() error {
 	return nil
 }
 
-// Step3Email 获取邮箱 (临时邮箱、Cloudflare Temp Mail、Outlook)
+// Step3Email 获取邮箱 (Outlook 或默认 MoeMail)。
+// 其他邮箱来源可以通过实现 email.TempEmailService 接口自行扩展。
 func (r *Registrar) Step3Email() error {
 	if r.Cfg.UseOutlook && r.Cfg.OutlookAccount != nil {
 		log.Println("[3] 使用 Outlook 邮箱")
 		r.Email = r.Cfg.OutlookAccount.Email
-		log.Printf("email=%s", r.Email)
-		return nil
-	}
-	if r.Cfg.UseCFTemp {
-		log.Println("[3] 使用 Cloudflare Temp Mail")
-		r.EmailSvc = email.NewCFTempMailService(r.Cfg.CFTempBaseURL, r.Cfg.CFTempAdminKey, r.Cfg.CFTempCustomAuth, r.Cfg.Proxy)
-		r.Email = r.EmailSvc.Create()
-		log.Printf("email=%s", r.Email)
-		return nil
-	}
-	if r.Cfg.UseMailTM {
-		log.Println("[3] 使用 MailTM 临时邮箱")
-		r.EmailSvc = email.NewMailTMProvider(r.Cfg.Proxy)
-		r.Email = r.EmailSvc.Create()
-		log.Printf("email=%s", r.Email)
-		return nil
-	}
-	if r.Cfg.UseThrowawayMail {
-		log.Println("[3] 使用 ThrowawayMail 临时邮箱")
-		r.EmailSvc = email.NewThrowawayMailProvider(r.Cfg.Proxy)
-		r.Email = r.EmailSvc.Create()
-		log.Printf("email=%s", r.Email)
-		return nil
-	}
-	if r.Cfg.UseGmail && r.Cfg.GmailAccount != nil {
-		log.Println("[3] 使用 Gmail 邮箱")
-		r.Email = r.Cfg.GmailAccount.Email
-		r.EmailSvc = email.NewGmailProvider(r.Cfg.GmailAccount.Email, r.Cfg.GmailAccount.AppPassword, r.Cfg.Proxy)
 		log.Printf("email=%s", r.Email)
 		return nil
 	}

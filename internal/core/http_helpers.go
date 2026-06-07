@@ -12,8 +12,8 @@ import (
 // BuildHeaders 构建通用请求头
 func (r *Registrar) BuildHeaders(referer, origin string) map[string]string {
 	h := map[string]string{
-		"Accept":              "application/json, text/plain, */*",
-		"Accept-Language":     "zh-CN,zh;q=0.9,en;q=0.8",
+		"Accept":             "application/json, text/plain, */*",
+		"Accept-Language":    "zh-CN,zh;q=0.9,en;q=0.8",
 		"Accept-Encoding":    "gzip, deflate, br",
 		"Content-Type":       "application/json",
 		"User-Agent":         r.Identity.UA,
@@ -39,8 +39,8 @@ func (r *Registrar) BuildHeaders(referer, origin string) map[string]string {
 // BuildProfileHeaders 构建 profile 页面请求头
 func (r *Registrar) BuildProfileHeaders(referer string) map[string]string {
 	h := map[string]string{
-		"Accept":              "*/*",
-		"Accept-Language":     "zh-CN,zh;q=0.9,en;q=0.8",
+		"Accept":             "*/*",
+		"Accept-Language":    "zh-CN,zh;q=0.9,en;q=0.8",
 		"Content-Type":       "application/json;charset=UTF-8",
 		"User-Agent":         r.Identity.UA,
 		"Origin":             r.Cfg.ProfileBase,
@@ -81,7 +81,7 @@ func (r *Registrar) CookieString() string {
 // FetchD2CToken 获取 D2C Token
 func (r *Registrar) FetchD2CToken(origin, referer string) error {
 	headers := map[string]string{
-		"Accept":              "*/*",
+		"Accept":             "*/*",
 		"Content-Type":       "application/json",
 		"User-Agent":         r.Identity.UA,
 		"Origin":             origin,

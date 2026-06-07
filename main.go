@@ -26,8 +26,8 @@ func main() {
 	godotenv.Load()
 
 	count := flag.Int("n", 1, "注册数量")
-	output := flag.String("o", "", "结果输出到json件")
-	proxy := flag.String("p", "", "代理地址")
+	output := flag.String("o", "", "结果输出到 JSON 文件")
+	proxy := flag.String("p", "", "代理地址, 多个地址用逗号分隔 (e.g. socks5://ip1:port,socks5://ip2:port)，每任务轮换使用")
 	delay := flag.Int("d", 3, "串行模式间隔秒数")
 	concurrency := flag.Int("j", 1, "并发数")
 	debug := flag.Bool("debug", false, "调试模式")
@@ -38,15 +38,6 @@ func main() {
 	outlookCSV := flag.String("outlook-csv", "outlook.csv", "Outlook CSV 文件路径")
 	moEmailURL := flag.String("moemail-url", getEnv("MOEMAIL_BASE_URL", "https://api.moemail.app"), "MoEmail API 地址")
 	moEmailAPIKey := flag.String("moemail-key", getEnv("MOEMAIL_API_KEY", ""), "MoEmail API Key")
-	useCFTemp := flag.Bool("cftemp", false, "使用 Cloudflare Temp Mail")
-	useMailTM := flag.Bool("mailtm", false, "使用 MailTM 临时邮箱 (免费, 无 API Key 要求)")
-	useThrowawayMail := flag.Bool("throwawaymail", false, "使用 ThrowawayMail 临时邮箱 (免费, 无 API Key 要求)")
-	useGmail := flag.Bool("gmail", false, "使用 Gmail 邮箱 (需要 App Password)")
-	gmailEmail := flag.String("gmail-email", "", "Gmail 邮箱地址")
-	gmailAppPwd := flag.String("gmail-app-password", "", "Gmail App Password")
-	cftempURL := flag.String("cftemp-url", getEnv("CFTEMP_BASE_URL", ""), "Cloudflare Temp Mail 地址")
-	cftempAdminKey := flag.String("cftemp-admin-key", getEnv("CFTEMP_ADMIN_KEY", ""), "Cloudflare Temp Mail 管理密码")
-	cftempCustomAuth := flag.String("cftemp-custom-auth", getEnv("CFTEMP_CUSTOM_AUTH", ""), "Cloudflare Temp Mail 站点密码")
 	flag.Parse()
 
 	if *debug {
@@ -67,38 +58,33 @@ func main() {
 		return
 	}
 
-	os.MkdirAll(filepath.Dir(outPath), 0755)
+	if err := os.MkdirAll(filepath.Dir(outPath), 0755); err != nil {
+		log.Fatalf("创建输出目录失败: %v", err)
+	}
 
 	cfg := core.NewConfig()
-	cfg.Proxy = *proxy
+	proxyStr := *proxy
+	if proxyStr != "" {
+		parts := parseProxyList(proxyStr)
+		cfg.Proxies = parts
+		if len(parts) > 0 {
+			cfg.Proxy = parts[0]
+		}
+		if len(parts) > 1 {
+			log.Printf("代理池: 共 %d 个代理, 轮换使用", len(parts))
+		}
+	} else {
+		cfg.Proxy = ""
+		cfg.Proxies = nil
+	}
 	cfg.Debug = *debug
 	cfg.MoEmailBaseURL = *moEmailURL
 	cfg.MoEmailAPIKey = *moEmailAPIKey
 
-	if *useCFTemp {
-		cfg.UseCFTemp = true
-		cfg.CFTempBaseURL = *cftempURL
-		cfg.CFTempAdminKey = *cftempAdminKey
-		cfg.CFTempCustomAuth = *cftempCustomAuth
-	}
-	if *useMailTM {
-		cfg.UseMailTM = true
-	}
-	if *useThrowawayMail {
-		cfg.UseThrowawayMail = true
-	}
-	if *useGmail {
-		cfg.UseGmail = true
-		if *gmailEmail != "" && *gmailAppPwd != "" {
-			cfg.GmailAccount = &email.GmailAccount{Email: *gmailEmail, AppPassword: *gmailAppPwd}
-		}
-	}
-
 	// 模式选择
 	var modeDesc string
 	var outlookAccounts []email.OutlookAccount
-	switch {
-	case *useOutlook:
+	if *useOutlook {
 		cfg.UseOutlook = true
 		cfg.OutlookCSV = *outlookCSV
 		var err error
@@ -113,23 +99,16 @@ func main() {
 			log.Printf("注意: 需要注册 %d 个, CSV 中有 %d 个账号 (已注册的会自动跳过)", *count, len(outlookAccounts))
 		}
 		modeDesc = fmt.Sprintf("Outlook 模式: 已加载 %d 个账号", len(outlookAccounts))
-	case *useCFTemp:
-		modeDesc = "Cloudflare Temp Mail 模式"
-	case *useMailTM:
-		modeDesc = "MailTM 临时邮箱模式"
-	case *useThrowawayMail:
-		modeDesc = "ThrowawayMail 临时邮箱模式"
-	case *useGmail:
-		if cfg.GmailAccount == nil {
-			log.Fatal("Gmail 模式需要指定 -gmail-email 和 -gmail-app-password")
-		}
-		modeDesc = fmt.Sprintf("Gmail 模式: %s", cfg.GmailAccount.Email)
-	default:
+	} else {
 		modeDesc = "临时邮箱模式 (MoeMail)"
 	}
 	log.Println(modeDesc)
 
-	checkIPRegion(cfg.Proxy)
+	if len(cfg.Proxies) > 1 {
+		checkMultiIPRegion(cfg.Proxies)
+	} else {
+		checkIPRegion(cfg.Proxy)
+	}
 
 	runBatch(*count, cfg, outPath, *delay, *concurrency, outlookAccounts)
 }
@@ -158,6 +137,9 @@ func runBatch(count int, cfg *core.Config, output string, delay, concurrency int
 		for {
 			taskCfg := *cfg
 			taskCfg.Password = core.GenPassword()
+			if len(cfg.Proxies) > 0 {
+				taskCfg.Proxy = cfg.Proxies[taskNum%len(cfg.Proxies)]
+			}
 
 			var acc email.OutlookAccount
 			if cfg.UseOutlook {
@@ -192,7 +174,9 @@ func runBatch(count int, cfg *core.Config, output string, delay, concurrency int
 
 			mu.Lock()
 			results = append(results, result)
-			saveResults(existing, results, output)
+			if err := saveResults(existing, results, output); err != nil {
+				log.Printf("保存结果失败: %v", err)
+			}
 			okCount := 0
 			for _, r := range results {
 				if r["status"] == "success" {
@@ -261,7 +245,7 @@ func runBatch(count int, cfg *core.Config, output string, delay, concurrency int
 }
 
 // saveResults 保存结果到 JSON (增量追加，existing 为已有数据)
-func saveResults(existing []map[string]interface{}, results []map[string]interface{}, path string) {
+func saveResults(existing []map[string]interface{}, results []map[string]interface{}, path string) error {
 	// 以已有数据为基础
 	outputData := make([]map[string]interface{}, len(existing))
 	copy(outputData, existing)
@@ -290,8 +274,11 @@ func saveResults(existing []map[string]interface{}, results []map[string]interfa
 			outputData = append(outputData, item)
 		}
 	}
-	b, _ := json.MarshalIndent(outputData, "", "  ")
-	os.WriteFile(path, b, 0644)
+	b, err := json.MarshalIndent(outputData, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, b, 0600)
 }
 
 // getEnv 获取环境变量，如果不存在则返回默认值
@@ -300,6 +287,19 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// parseProxyList 解析逗号分隔的代理列表，并过滤空白项。
+func parseProxyList(proxyStr string) []string {
+	raw := strings.Split(proxyStr, ",")
+	proxies := make([]string, 0, len(raw))
+	for _, item := range raw {
+		item = strings.TrimSpace(item)
+		if item != "" {
+			proxies = append(proxies, item)
+		}
+	}
+	return proxies
 }
 
 // removeAccountFromCSV 从 CSV 中移除已消费/已注册的账号
@@ -419,4 +419,23 @@ func checkIPRegion(proxy string) {
 	}
 
 	log.Printf("IP 检测异常: 所有 geo 服务均不可用，忽略")
+}
+
+func checkMultiIPRegion(proxies []string) {
+	log.Println("正在检测代理池各 IP 地区...")
+	svcs := []string{"https://ipinfo.io/json", "https://api.ip.sb/geoip"}
+	for i, p := range proxies {
+		client := httputil.NewNoRedirectTLSClient(p, "120")
+		var found bool
+		for _, url := range svcs {
+			if result, ok := fetchGeo(client, url); ok {
+				log.Printf("  代理[%d]: %s [%s %s %s] ISP: %s", i+1, result.IP, result.Country, result.Region, result.City, result.ISP)
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("  代理[%d]: 检测异常", i+1)
+		}
+	}
 }

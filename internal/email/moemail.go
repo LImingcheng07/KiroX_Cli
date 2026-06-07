@@ -11,8 +11,8 @@ import (
 	"time"
 
 	http "github.com/bogdanfinn/fhttp"
-	httputil "reg_go/internal/http"
 	tls_client "github.com/bogdanfinn/tls-client"
+	httputil "reg_go/internal/http"
 )
 
 // MoEmailProvider MoEmail 临时邮箱提供者

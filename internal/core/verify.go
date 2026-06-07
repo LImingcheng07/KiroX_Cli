@@ -29,7 +29,9 @@ func checkEndpointResponse(url string, statusCode int, body []byte) endpointResu
 	return endpointResult{body: body, ok: true}
 }
 
-func queryGetEndpoint(client interface{ Do(req *fhttp.Request) (*fhttp.Response, error) }, access, url string) endpointResult {
+func queryGetEndpoint(client interface {
+	Do(req *fhttp.Request) (*fhttp.Response, error)
+}, access, url string) endpointResult {
 	req, _ := fhttp.NewRequest("GET", url, nil)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+access)
@@ -161,7 +163,9 @@ type VerifyAccountResult struct {
 	Error        string  `json:"error,omitempty"`
 }
 
-func queryEndpointStandalone(client interface{ Do(req *fhttp.Request) (*fhttp.Response, error) }, access, url string) endpointResult {
+func queryEndpointStandalone(client interface {
+	Do(req *fhttp.Request) (*fhttp.Response, error)
+}, access, url string) endpointResult {
 	return queryGetEndpoint(client, access, url)
 }
 
