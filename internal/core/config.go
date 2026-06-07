@@ -35,6 +35,13 @@ type Config struct {
 	MoEmailBaseURL string
 	MoEmailAPIKey  string
 
+	// Cloudflare Temp Mail 配置
+	UseCFTemp        bool
+	CFTempBaseURL    string
+	CFTempAdminKey   string
+	CFTempCustomAuth string
+	CFTempDomain     string
+
 	// Outlook 模式
 	UseOutlook     bool
 	OutlookCSV     string

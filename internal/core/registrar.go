@@ -207,12 +207,25 @@ func (r *Registrar) Step2Device() error {
 	return nil
 }
 
-// Step3Email 获取邮箱 (Outlook 或默认 MoeMail)。
+// Step3Email 获取邮箱 (Outlook、Cloudflare Temp Mail 或默认 MoeMail)。
 // 其他邮箱来源可以通过实现 email.TempEmailService 接口自行扩展。
 func (r *Registrar) Step3Email() error {
 	if r.Cfg.UseOutlook && r.Cfg.OutlookAccount != nil {
 		log.Println("[3] 使用 Outlook 邮箱")
 		r.Email = r.Cfg.OutlookAccount.Email
+		log.Printf("email=%s", r.Email)
+		return nil
+	}
+	if r.Cfg.UseCFTemp {
+		log.Println("[3] 使用 Cloudflare Temp Mail")
+		r.EmailSvc = email.NewCFTempMailService(
+			r.Cfg.CFTempBaseURL,
+			r.Cfg.CFTempAdminKey,
+			r.Cfg.CFTempCustomAuth,
+			r.Cfg.CFTempDomain,
+			r.Cfg.Proxy,
+		)
+		r.Email = r.EmailSvc.Create()
 		log.Printf("email=%s", r.Email)
 		return nil
 	}

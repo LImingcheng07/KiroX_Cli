@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v1.1.0-6366f1?style=flat-square" alt="version">
+  <img src="https://img.shields.io/badge/version-v1.1.1-6366f1?style=flat-square" alt="version">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-0078d4?style=flat-square" alt="platform">
   <img src="https://img.shields.io/badge/Go-1.24-00ADD8?style=flat-square&logo=go" alt="go">
   <a href="https://linux.do"><img src="https://img.shields.io/badge/LINUX%20DO-社区-f0b752?style=flat-square" alt="LINUX DO"></a>
@@ -14,17 +14,20 @@
 
 ---
 
+> 如果这个项目对你有帮助，欢迎在 GitHub 右上角点一个 **Star** 支持一下。
+> 使用或二次开发过程中有问题，也可以加 QQ：**2779249042** 咨询交流。
+
 ## 简介
 
-KiroX CLI 是基于 [huey1in/KiroX_Cli](https://github.com/huey1in/KiroX_Cli) 二次开发的命令行工具。原项目来自 [KiroX](https://github.com/huey1in/kirox) 的命令行版本，去除了图形界面依赖，仅保留核心注册逻辑。当前版本保留已验证的 Outlook 邮箱池和 MoeMail 临时邮箱能力，并提供 `email.TempEmailService` 接口，方便用户按自己的邮箱服务自行扩展。
+KiroX CLI 是基于 [huey1in/KiroX_Cli](https://github.com/huey1in/KiroX_Cli) 二次开发的命令行工具。原项目来自 [KiroX](https://github.com/huey1in/kirox) 的命令行版本，去除了图形界面依赖，仅保留核心注册逻辑。当前版本保留已验证的 Outlook 邮箱池、MoeMail 临时邮箱和自建 Cloudflare Temp Mail 能力，并提供 `email.TempEmailService` 接口，方便用户按自己的邮箱服务继续扩展。
 
 ## 二次开发说明
 
 - 上游项目：[huey1in/KiroX_Cli](https://github.com/huey1in/KiroX_Cli)
 - 原作者：[@huey1in](https://github.com/huey1in)
 - 本仓库为个人二次开发版本，保留原项目 Apache License 2.0 协议和作者署名。
-- 主要改动：保留核心注册流程，增加代理池轮换、结果文件安全写入、依赖整理和少量基础测试。
-- 邮箱扩展建议通过 `internal/email/interface.go` 中的 `TempEmailService` 接口自行实现；本仓库不内置未验证的第三方邮箱 Provider。
+- 主要改动：保留核心注册流程，支持 Outlook / MoeMail / 自建 Cloudflare Temp Mail，增加代理池轮换、结果文件安全写入、依赖整理和少量基础测试。
+- 邮箱扩展建议通过 `internal/email/interface.go` 中的 `TempEmailService` 接口自行实现；除自建 Cloudflare Temp Mail 外，本仓库不内置未验证的第三方邮箱 Provider。
 
 ---
 
@@ -39,6 +42,7 @@ KiroX CLI 是基于 [huey1in/KiroX_Cli](https://github.com/huey1in/KiroX_Cli) �
 **邮箱支持**
 - **Outlook 邮箱池**：从 CSV 导入 `邮箱----密码----客户端ID----RefreshToken` 格式账号，自动通过 IMAP 获取验证码
 - **MoeMail 临时邮箱**：通过 API 获取临时邮箱并接收验证码
+- **Cloudflare Temp Mail**：支持用户自建实例，可通过 `-p` 代理访问
 - **自定义邮箱扩展**：实现 `internal/email/interface.go` 中的 `TempEmailService` 接口后，可按需接入自己的邮箱服务
 
 **反检测**
@@ -99,6 +103,11 @@ go run main.go
 | `-outlook-csv` | string | `outlook.csv` | Outlook CSV 文件路径 |
 | `-moemail-url` | string | `https://api.moemail.app` | MoeMail API 地址 |
 | `-moemail-key` | string | 无 | MoeMail API Key |
+| `-cftemp` | bool | `false` | 使用自建 Cloudflare Temp Mail |
+| `-cftemp-url` | string | 环境变量 `CFTEMP_BASE_URL` | Cloudflare Temp Mail 地址 |
+| `-cftemp-admin-key` | string | 环境变量 `CFTEMP_ADMIN_KEY` | Cloudflare Temp Mail 管理密码 |
+| `-cftemp-custom-auth` | string | 环境变量 `CFTEMP_CUSTOM_AUTH` | Cloudflare Temp Mail 站点密码，可留空 |
+| `-cftemp-domain` | string | 环境变量 `CFTEMP_DOMAIN` | 自定义域名，可留空使用服务默认域名 |
 | `-imap` | bool | `false` | IMAP 邮件测试模式 |
 | `-imap-csv` | string | `outlook.csv` | IMAP 测试用 CSV |
 | `-imap-i` | int | `0` | 测试 CSV 中第几个账号（从 0 开始） |
@@ -110,6 +119,12 @@ go run main.go
 ```env
 MOEMAIL_BASE_URL=https://api.moemail.app
 MOEMAIL_API_KEY=your_api_key_here
+
+# Cloudflare Temp Mail（使用 -cftemp 时需要）
+CFTEMP_BASE_URL=https://mail.example.com
+CFTEMP_ADMIN_KEY=your_admin_key_here
+CFTEMP_CUSTOM_AUTH=optional_site_password
+CFTEMP_DOMAIN=example.com
 ```
 
 ### 2. Outlook 邮箱池模式
@@ -137,9 +152,30 @@ xxx@outlook.com----password----xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx----M.C5XX...
   -moemail-key YOUR_API_KEY
 ```
 
-### 4. 自定义邮箱服务扩展
+### 4. Cloudflare Temp Mail 模式
 
-本仓库只内置 Outlook 和 MoeMail 两种已验证路径。其他邮箱服务请自行实现接口：
+适用于用户自建的 Cloudflare Temp Mail 服务。该模式会复用 `-p` 代理配置，因此自建服务或网络环境需要代理时可以直接传入代理参数。
+
+```bash
+./kirox-cli -cftemp \
+  -cftemp-url https://mail.example.com \
+  -cftemp-admin-key YOUR_ADMIN_KEY \
+  -cftemp-domain example.com \
+  -n 5 -d 5 \
+  -p socks5://127.0.0.1:10808
+```
+
+如果服务端有自定义站点密码，再加：
+
+```bash
+-cftemp-custom-auth YOUR_SITE_PASSWORD
+```
+
+`-cftemp-domain` 可留空，留空时使用自建服务的默认域名策略。
+
+### 5. 自定义邮箱服务扩展
+
+本仓库内置 Outlook、MoeMail 和自建 Cloudflare Temp Mail。其他邮箱服务请自行实现接口：
 
 ```go
 type TempEmailService interface {
@@ -151,7 +187,7 @@ type TempEmailService interface {
 
 接口定义位置：`internal/email/interface.go`。实现后在 `internal/core/registrar.go` 的 `Step3Email` 中按需接入即可。
 
-### 5. IMAP 测试模式
+### 6. IMAP 测试模式
 
 用于验证 Outlook 账号的 RefreshToken 是否有效、能否拉取邮件：
 
@@ -160,7 +196,7 @@ type TempEmailService interface {
 ./kirox-cli -imap -imap-csv outlook.csv -imap-i 0
 ```
 
-### 6. 代理配置
+### 7. 代理配置
 
 支持以下格式（通过 `-p` 参数传入）：
 
@@ -181,7 +217,7 @@ socks5://user:pass@host:port
 
 启动时会逐个检测所有代理的出口 IP、地区、ISP 并打印。留空 `-p ""` 则直连。
 
-### 7. 查看结果
+### 8. 查看结果
 
 注册成功的账号默认写入 `output/results.json`，格式：
 
@@ -246,7 +282,7 @@ KiroX_cli/
 
 ## 关于 Pro / 绑卡脚本
 
-本仓库不把银行卡开通 Pro 的参考脚本作为正式功能发布。相关实现如果用户有需要，请自行基于自己的环境完善和验证；发布版本仅保证核心注册流程、邮箱接口和结果输出路径。
+本仓库不把银行卡开通 Pro 的参考脚本作为正式功能发布。相关实现如果用户有需要，请自行基于自己的环境完善和验证；发布版本仅保证核心注册流程、Outlook / MoeMail / 自建 Cloudflare Temp Mail、邮箱接口和结果输出路径。
 
 ## 注意事项
 

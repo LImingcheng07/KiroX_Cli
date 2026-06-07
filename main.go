@@ -38,6 +38,11 @@ func main() {
 	outlookCSV := flag.String("outlook-csv", "outlook.csv", "Outlook CSV 文件路径")
 	moEmailURL := flag.String("moemail-url", getEnv("MOEMAIL_BASE_URL", "https://api.moemail.app"), "MoEmail API 地址")
 	moEmailAPIKey := flag.String("moemail-key", getEnv("MOEMAIL_API_KEY", ""), "MoEmail API Key")
+	useCFTemp := flag.Bool("cftemp", false, "使用 Cloudflare Temp Mail")
+	cftempURL := flag.String("cftemp-url", getEnv("CFTEMP_BASE_URL", ""), "Cloudflare Temp Mail 地址")
+	cftempAdminKey := flag.String("cftemp-admin-key", getEnv("CFTEMP_ADMIN_KEY", ""), "Cloudflare Temp Mail 管理密码")
+	cftempCustomAuth := flag.String("cftemp-custom-auth", getEnv("CFTEMP_CUSTOM_AUTH", ""), "Cloudflare Temp Mail 站点密码")
+	cftempDomain := flag.String("cftemp-domain", getEnv("CFTEMP_DOMAIN", ""), "Cloudflare Temp Mail 自定义域名，可留空使用服务默认域名")
 	flag.Parse()
 
 	if *debug {
@@ -80,6 +85,13 @@ func main() {
 	cfg.Debug = *debug
 	cfg.MoEmailBaseURL = *moEmailURL
 	cfg.MoEmailAPIKey = *moEmailAPIKey
+	if *useCFTemp {
+		cfg.UseCFTemp = true
+		cfg.CFTempBaseURL = *cftempURL
+		cfg.CFTempAdminKey = *cftempAdminKey
+		cfg.CFTempCustomAuth = *cftempCustomAuth
+		cfg.CFTempDomain = *cftempDomain
+	}
 
 	// 模式选择
 	var modeDesc string
@@ -99,6 +111,11 @@ func main() {
 			log.Printf("注意: 需要注册 %d 个, CSV 中有 %d 个账号 (已注册的会自动跳过)", *count, len(outlookAccounts))
 		}
 		modeDesc = fmt.Sprintf("Outlook 模式: 已加载 %d 个账号", len(outlookAccounts))
+	} else if *useCFTemp {
+		if cfg.CFTempBaseURL == "" || cfg.CFTempAdminKey == "" {
+			log.Fatal("Cloudflare Temp Mail 模式需要指定 -cftemp-url 和 -cftemp-admin-key")
+		}
+		modeDesc = "Cloudflare Temp Mail 模式"
 	} else {
 		modeDesc = "临时邮箱模式 (MoeMail)"
 	}
